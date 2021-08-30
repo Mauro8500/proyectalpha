@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import logo from './logo.svg'
+import logo from './logo.svg';
 import './App.css';
 import axios from "axios";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { Modal, ModalBody, ModalHeader, ModalFooter} from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 
 const url="https://localhost:44302/api/empresas/";
 
