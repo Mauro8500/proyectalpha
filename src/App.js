@@ -29,7 +29,7 @@ class App extends Component {
     console.log(error.message);
   })
   }
-  //sdjasbdasdj
+  //ujvghv
   peticionPost=async()=>{
     delete this.state.form.id;
    await axios.post(url,this.state.form).then(response=>{
