@@ -7,44 +7,165 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { Modal, ModalBody, ModalHeader, ModalFooter} from 'reactstrap';
 
-const url="https://localhost:44302/api/empresas/";
+const url="https://localhost:44202/task"
 
 class App extends Component {
-
-state={
-  data:[]
-}
-
+  state={
+    data:[],
+    modalInsertar: false,
+    modalEliminar: false,
+    form:{
+      id: '',
+      nombre: '',
+      detalle: '',
+      tipoModal: ''
+    }
+  }
+  
   peticionGet=()=>{
-    axios.get(url).then(response=>{
-      console.log(response.data)
+  axios.get(url).then(response=>{
+    this.setState({data: response.data});
+  }).catch(error=>{
+    console.log(error.message);
+  })
+  }
+  //sdjasbdasdj
+  peticionPost=async()=>{
+    delete this.state.form.id;
+   await axios.post(url,this.state.form).then(response=>{
+      this.modalInsertar();
+      this.peticionGet();
+    }).catch(error=>{
+      console.log(error.message);
     })
   }
-
-  componentDidMount(){
+  
+  peticionPut=()=>{
+    axios.put(url+this.state.form.id, this.state.form).then(response=>{
+      this.modalInsertar();
       this.peticionGet();
+    })
   }
-
-
-  render(){
-   return(
-    <div className="App">
-      <br />
-      <button className="btn btn-succes">Agregar tarea</button>
+  
+  peticionDelete=()=>{
+    axios.delete(url+this.state.form.id).then(response=>{
+      this.setState({modalEliminar: false});
+      this.peticionGet();
+    })
+  }
+  
+  modalInsertar=()=>{
+    this.setState({modalInsertar: !this.state.modalInsertar});
+  }
+  
+  seleccionarTarea=(tarea)=>{
+    this.setState({
+      tipoModal: 'actualizar',
+      form: {
+        id: tarea.id,
+        nombre: tarea.nombre,
+        detalle: tarea.detalle
+      }
+    })
+  }
+  
+  handleChange=async e=>{
+  e.persist();
+  await this.setState({
+    form:{
+      ...this.state.form,
+      [e.target.name]: e.target.value
+    }
+  });
+  console.log(this.state.form);
+  }
+  
+    componentDidMount() {
+      this.peticionGet();
+    }
+    
+  
+    render(){
+      const {form}=this.state;
+    return (
+      <div className="App">
+      <br /><br /><br />
+    <button className="btn btn-success" onClick={()=>{this.setState({form: null, tipoModal: 'insertar'}); this.modalInsertar()}}>Agregar tarea</button>
     <br /><br />
-      <table className="table">
+      <table className="table ">
         <thead>
           <tr>
-            <th>Id</th>
-            <th>Nombre</th>
-            <th>País</th>
-            <th>Capital</th>
+            <th>ID</th>
+            <th>Nombre de la tarea</th>
+            <th>Detalles(opcional)</th>
             <th>Acciones</th>
           </tr>
-
         </thead>
+        <tbody>
+          {this.state.data.map(tarea=>{
+            return(
+              <tr>
+            <td>{tarea.id}</td>
+            <td>{tarea.nombre}</td>
+            <td>{tarea.detalle}</td>
+            <td>
+                  <button className="btn btn-primary" onClick={()=>{this.seleccionarTarea(tarea); this.modalInsertar()}}><FontAwesomeIcon icon={faEdit}/></button>
+                  {"   "}
+                  <button className="btn btn-danger" onClick={()=>{this.seleccionarTarea(tarea); this.setState({modalEliminar: true})}}><FontAwesomeIcon icon={faTrashAlt}/></button>
+                  </td>
+            </tr>
+            )
+          })}
+        </tbody>
       </table>
+  
+  
+  
+      <Modal isOpen={this.state.modalInsertar}>
+                  <ModalHeader style={{display: 'block'}}>
+                    <span style={{float: 'right'}} onClick={()=>this.modalInsertar()}>x</span>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="form-group">
+                      <label htmlFor="id">ID</label>
+                      <input className="form-control" type="text" name="id" id="id" readOnly onChange={this.handleChange} value={form?form.id: this.state.data.length+1}/>
+                      <br />
+                      <label htmlFor="nombre">Nombre</label>
+                      <input className="form-control" type="text" name="nombre" id="nombre" onChange={this.handleChange} value={form?form.nombre: ''}/>
+                      <br />
+                      <br />
+                      <label htmlFor="detalle">Detalles(opcional)</label>
+                      <input className="form-control" type="text" name="detalle" id="detalle" onChange={this.handleChange} value={form?form.detalle:''}/>
+                    </div>
+                  </ModalBody>
+  
+                  <ModalFooter>
+                    {this.state.tipoModal=='insertar'?
+                      <button className="btn btn-success" onClick={()=>this.peticionPost()}>
+                      Insertar
+                    </button>: <button className="btn btn-primary" onClick={()=>this.peticionPut()}>
+                      Actualizar
+                    </button>
+    }
+                      <button className="btn btn-danger" onClick={()=>this.modalInsertar()}>Cancelar</button>
+                  </ModalFooter>
+            </Modal>
+  
+  
+            <Modal isOpen={this.state.modalEliminar}>
+              <ModalBody>
+                 Estás seguro que deseas eliminar la tarea {form && form.nombre}
+              </ModalBody>
+              <ModalFooter>
+                <button className="btn btn-danger" onClick={()=>this.peticionDelete()}>Sí</button>
+                <button className="btn btn-secundary" onClick={()=>this.setState({modalEliminar: false})}>No</button>
+              </ModalFooter>
+            </Modal>
     </div>
-   ); 
+  
+  
+  
+    );
   }
-}
+  }
+  export default App;
